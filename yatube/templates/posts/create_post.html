@@ -23,12 +23,7 @@
         <div class="card-body">
           {% load user_filters %}
           {% include 'includes/form_error_check.html' %}
-          <form method="post"
-              {% if is_edit %}
-                action = "{% url 'posts:post_edit' post_id %}"
-              {% else %}
-                action = "{% url 'posts:post_create' %}"
-              {% endif %}>
+          <form method="post">
             {% include 'includes/form_fields.html' %}
             <div class="d-flex justify-content-end">
               <button type="submit" class="btn btn-primary">

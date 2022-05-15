@@ -10,7 +10,7 @@
         <div class="card-body">
           {% load user_filters %}
           {% include 'includes/form_error_check.html' %}
-          <form method="post" action="{% url 'users:signup' %}">
+          <form method="post">
             {% include 'includes/form_fields.html' %}
             <div class="col-md-6 offset-md-4">
               <button type="submit" class="btn btn-primary">
