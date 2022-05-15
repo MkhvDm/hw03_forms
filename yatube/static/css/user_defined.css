@@ -8,3 +8,23 @@ a:visited {
 a:hover {
   color: #014210;
 }
+
+
+ul {
+  padding-left: 0;
+}
+li {
+  list-style: none;
+}
+
+/* Nav button colour customize*/
+.nav-pills .nav-link.active, .nav-pills .show>.nav-link {
+    color: #fcfcfc;
+    background-color: #408050;
+}
+/* Paginator active page colour customize*/
+.page-item.active .page-link {
+    color: #fff;
+    background-color: #609f70;
+    border-color: #609f70;
+}

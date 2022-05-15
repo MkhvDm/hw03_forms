@@ -18,7 +18,7 @@ def index(request):
     )
     page_obj = paginated_posts.get_page(request.GET.get('page'))
     return render(request, 'posts/index.html',
-                  {'title': 'Главная страница проекта yaTube',
+                  {'title': 'Добро пожаловать в yaTube',
                    'page_obj': page_obj,
                    'group_link_is_visible': True})
 
@@ -83,9 +83,8 @@ def post_create(request):
             post_inst.author = request.user
             post_inst.save()
             return redirect('posts:profile', username=request.user.username)
-        else:
-            return render(request, 'posts/create_post.html', {'form': form})
-    form = PostForm()
+    else:
+        form = PostForm()
     return render(request, 'posts/create_post.html',
                   {'form': form,
                    'is_edit': False})
@@ -101,13 +100,9 @@ def post_edit(request, post_id):
         form = PostForm(instance=post, data=request.POST)
         if form.is_valid():
             form.save()
-        else:
-            return render(request, 'posts/create_post.html',
-                          {'post_id': post_id,
-                           'form': form,
-                           'is_edit': True})
-        return redirect('posts:post_detail', post_id=post_id)
-    form = PostForm(instance=post)
+            return redirect('posts:post_detail', post_id=post_id)
+    else:
+        form = PostForm(instance=post)
     return render(request, 'posts/create_post.html',
                   {'post_id': post_id,
                    'form': form,
