@@ -6,9 +6,20 @@ User = get_user_model()
 
 class Group(models.Model):
     """Модель группы публикаций."""
-    title = models.CharField(max_length=200, verbose_name='Название')
-    slug = models.SlugField(unique=True, verbose_name='Семантический URL')
-    description = models.TextField(verbose_name='Описание')
+    title = models.CharField(
+        max_length=200,
+        verbose_name='Название',
+        help_text='Введите название группы'
+    )
+    slug = models.SlugField(
+        unique=True,
+        verbose_name='Семантический URL',
+        help_text='Короткий тэг для группы'
+    )
+    description = models.TextField(
+        verbose_name='Описание',
+        help_text='Введите описание группы.'
+    )
 
     def __str__(self):
         return self.title
@@ -21,7 +32,8 @@ class Group(models.Model):
 class Post(models.Model):
     """Модель публикации."""
     text = models.TextField(
-        verbose_name='Текст публикации'
+        verbose_name='Текст публикации',
+        help_text='Введите текст поста'
     )
     pub_date = models.DateTimeField(
         auto_now_add=True,
@@ -44,7 +56,7 @@ class Post(models.Model):
     )
 
     def __str__(self):
-        return self.text
+        return self.text[:15]
 
     class Meta:
         verbose_name = 'Публикация'

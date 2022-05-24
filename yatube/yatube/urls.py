@@ -25,7 +25,7 @@ urlpatterns = [
     path('about/', include('about.urls', namespace='about')),
 ]
 
-if settings.DEBUG and settings.USE_DEBUG_TOOLBAR:
-    urlpatterns = [
-        path('__debug__/', include('debug_toolbar.urls'))
-    ] + urlpatterns
+# if settings.DEBUG and settings.USE_DEBUG_TOOLBAR:
+#     urlpatterns = [
+#         path('__debug__/', include('debug_toolbar.urls'))
+#     ] + urlpatterns

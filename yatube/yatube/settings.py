@@ -25,7 +25,13 @@ SECRET_KEY = 'a+47^un*sw=vtu#^9m6s0l26u1%2)h1*rpe8&l15kwzhg%q(h2'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', '127.0.0.1:8000']
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '127.0.0.1:8000',
+    '[::1]',
+    'testserver',
+]
 
 
 # Application definition
@@ -143,9 +149,15 @@ EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
 
 # Debug Toolbar settings
-USE_DEBUG_TOOLBAR = True
-if USE_DEBUG_TOOLBAR:
-    INSTALLED_APPS.append('debug_toolbar')
-    MIDDLEWARE = (['debug_toolbar.middleware.DebugToolbarMiddleware']
-                  + MIDDLEWARE)
-    INTERNAL_IPS = ['127.0.0.1', ]
+# USE_DEBUG_TOOLBAR = False
+# if USE_DEBUG_TOOLBAR:
+#     INSTALLED_APPS.append('debug_toolbar')
+#     MIDDLEWARE = (['debug_toolbar.middleware.DebugToolbarMiddleware']
+#                   + MIDDLEWARE)
+#     INTERNAL_IPS = [
+#         'localhost',
+#         '127.0.0.1',
+#         '[::1]',
+#         'testserver',
+#     ]
+
