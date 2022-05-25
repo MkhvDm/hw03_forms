@@ -19,27 +19,38 @@ class PostViewsTests(TestCase):
         super().setUpClass()
         cls.user_author = User.objects.create(username='Im_author')
         cls.user_not_author = User.objects.create(username='Im_not_author')
-        cls.num_of_test_groups = 3
-        cls.groups = [None, ]
+        cls.num_of_test_groups = 2
+
         for i in range(cls.num_of_test_groups):
-            cls.groups.append(
-                Group.objects.create(
-                    title=f'Тестовая группа {i}',
-                    slug=f'test-group-slug-{i}',
-                    description=f'Тестовое описание {i}',
-                )
+            Group.objects.create(
+                title=f'Тестовая группа {i}',
+                slug=f'test-group-slug-{i}',
+                description=f'Тестовое описание {i}',
             )
-        # print('\nGROUPS:')
-        # print(cls.groups)
-        cls.num_of_test_posts = 23
+        cls.groups = [None, Group.objects.get(pk=1), Group.objects.get(pk=2)]
+
+            # cls.groups.append(
+            #     Group.objects.create(
+            #         title=f'Тестовая группа {i}',
+            #         slug=f'test-group-slug-{i}',
+            #         description=f'Тестовое описание {i}',
+            #     )
+            # )
+
+        cls.num_of_test_posts = 33  # required 33+, recommended not x10
         cls.posts = []
         for i in range(cls.num_of_test_posts):
-            cls.posts.append(Post.objects.create(
+            Post.objects.create(
                 author=cls.user_author,
                 text=f'Тестовый пост {i}',
                 group=cls.groups[i % cls.num_of_test_groups]
-            ))
-        # print('\nPOSTS:')
+            )
+            # cls.posts.append(Post.objects.create(
+            #     author=cls.user_author,
+            #     text=f'Тестовый пост {i}',
+            #     group=cls.groups[i % cls.num_of_test_groups]
+            # ))
+        # print('\nPOSTS:', cls.posts)
         # print(cls.posts[0].group,
         #       cls.posts[1].group,
         #       cls.posts[2].group,
@@ -83,7 +94,7 @@ class PostViewsTests(TestCase):
 
     # index testing:
     def test_index_context_types(self):
-        """Проверка, что в контекст index'а передаются объекты верных типов."""
+        """В контекст index'а передаются объекты верных типов."""
         response = self.guest_client.get(reverse('posts:index'))
         expected_types = {
             'title': str,
@@ -104,24 +115,81 @@ class PostViewsTests(TestCase):
             settings.NUM_OF_POSTS_ON_PAGE)
 
     def test_index_last_page_context(self):
-        """Число постов на последней странице index равно %10 (default: 10)."""
-        response = self.guest_client.get(reverse('posts:index'))
+        """Число постов на последней странице index равно %N (default: 10)."""
+        n_posts = PostViewsTests.num_of_test_posts
+        posts_on_page = settings.NUM_OF_POSTS_ON_PAGE
+        last_page_num = (n_posts + (posts_on_page - 1)) // posts_on_page
+        expected_last_page_posts_num = (
+            posts_on_page
+            if not (n_posts % posts_on_page)
+            else n_posts % posts_on_page
+        )
+        response = self.guest_client.get(
+            reverse('posts:index') + f'?page={last_page_num}')
         self.assertEqual(
             len(response.context['page_obj']),
-            settings.NUM_OF_POSTS_ON_PAGE)
+            expected_last_page_posts_num)
 
     # group testing:
     def test_group_context_types(self):
-        pass
+        """В контекст group_list'а передаются объекты верных типов."""
+        response = self.guest_client.get(
+            reverse('posts:group_list', kwargs={'slug': 'test-group-slug-0'})
+        )
+        expected_types = {
+            'group': Group,
+            'page_obj': django.core.paginator.Page,
+            'group_link_is_visible': bool
+        }
+        for context_key, context_type in expected_types.items():
+            with self.subTest(context_key=context_key):
+                self.assertIsInstance(
+                    response.context[context_key],
+                    context_type)
 
-    def test_group_page_1_context(self):
-        pass
+    # def test_group_page_1_context(self):
+    #     pass
 
     def test_group_last_page_context(self):
-        pass
+        group_slug = 0
+        n_posts = PostViewsTests.num_of_test_posts
+        print('\nPOSTS:', n_posts)
+        n_groups = PostViewsTests.num_of_test_groups
+        print('GROUPS:', n_groups)
+        posts_on_page = settings.NUM_OF_POSTS_ON_PAGE
 
-    def test_unexist_group_slug(self):
-        # redirect 404
-        pass
+        n_group_posts = (n_posts + (n_groups - 1)) // (n_groups + 1)
+        print('GROUP POSTS:', n_group_posts)
+        last_page_num = (n_group_posts + (posts_on_page - 1)) // posts_on_page
+        expected_last_page_posts_num = (
+            posts_on_page
+            if not (n_group_posts % posts_on_page)
+            else n_group_posts % posts_on_page
+        )
+        print('LAST PAGE:', last_page_num)
+        print('EXPECTED GROUP POSTS:', expected_last_page_posts_num)
+        response = self.guest_client.get(
+            reverse(
+                'posts:group_list',
+                kwargs={'slug': f'test-group-slug-{group_slug}'}
+            ) + f'?page={last_page_num}')
+        print('RESPONSE LEN POSTS:', len(response.context['page_obj']))
+        for post in response.context['page_obj']:
+            print()
+            print(post)
+        # print('RESPONSE POSTS:', response.context['page_obj'])
+
+        self.assertEqual(
+            len(response.context['page_obj']),
+            expected_last_page_posts_num)
+
+
+    #
+    # def test_group_last_page_context(self):
+    #     pass
+    #
+    # def test_unexist_group_slug(self):
+    #     # redirect 404
+    #     pass
 
 
