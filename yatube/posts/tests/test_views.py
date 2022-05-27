@@ -5,8 +5,10 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import reverse
+from django import forms
 
 from ..models import Group, Post
+from ..forms import PostForm
 from django.core.paginator import Page
 from django.conf import settings
 
@@ -61,6 +63,9 @@ class PostViewsTests(TestCase):
 
         self.author_client = Client()
         self.author_client.force_login(PostViewsTests.user_author)
+
+        self.author_too_client = Client()
+        self.author_too_client.force_login(PostViewsTests.user_author_too)
 
         self.not_author_client = Client()
         self.not_author_client.force_login(PostViewsTests.user_not_author)
@@ -283,7 +288,7 @@ class PostViewsTests(TestCase):
 
     def test_correct_num_of_authors_posts(self):
         """На странице post_detail выводится верное число постов автора."""
-        author = 'Im_author'
+        # for author = 'Im_author'
         n_posts = PostViewsTests.num_of_test_posts
         n_author_posts = (n_posts // 2) + 1 if n_posts % 2 else n_posts // 2
         response = self.guest_client.get(
@@ -293,14 +298,72 @@ class PostViewsTests(TestCase):
 
     def test_unexisting_post(self):
         """На запрос несуществующего поста возвращается ошибка 404."""
-        pass
+        response = self.guest_client.get(
+            reverse('posts:post_detail', kwargs={'post_id': 666}),
+            follow=True
+        )
+        self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
 
     # post_edit testing:
-    # ...
+    def test_post_edit_context_types(self):
+        """В контекст post_edit передаются объекты верных типов."""
+        response = self.author_client.get(
+            reverse('posts:post_edit', kwargs={'post_id': 1})
+        )
+        expected_types = {
+            'post_id': int,
+            'form': PostForm,
+            'is_edit': bool
+        }
+        for context_key, context_type in expected_types.items():
+            with self.subTest(context_key=context_key):
+                self.assertIsInstance(
+                    response.context[context_key],
+                    context_type)
+
+    def test_post_edit_form(self):
+        """Проверка полей формы редактирования поста."""
+        response_form = self.author_client.get(
+            reverse('posts:post_edit', kwargs={'post_id': 1})
+        ).context.get('form')
+        form_fields = {
+            'text': (forms.fields.CharField, 'Тестовый пост 0'),
+            'group': (forms.models.ModelChoiceField, None),
+        }
+        for value, expected in form_fields.items():
+            with self.subTest(value=value):
+                form_field = response_form.fields[value]
+                field_pre_value = response_form[value].value()
+                self.assertIsInstance(form_field, expected[0])
+                self.assertEqual(field_pre_value, expected[1])
+
+        response_post = self.author_client.post(
+            reverse('posts:post_edit', kwargs={'post_id': 1})
+        )
+        response_form['text'] = 'Тестовый пост 0 UPD'
+        response_form['group'] = PostViewsTests.groups[1]
+        response_form.save()
+
+
+
+    def test_post_edit_save_changes(self):
+        response = self.author_client.get(
+            reverse('posts:post_edit', kwargs={'post_id': 3})
+        )
+
+
+    def test_post_edit_redirect(self):
+        """Не автор поста перенаправляется на страницу поста."""
+        response = self.author_too_client.get(
+            reverse('posts:post_edit', kwargs={'post_id': 1}), follow=True
+        )
+        self.assertRedirects(response, reverse('posts:post_detail',
+                                               kwargs={'post_id': 1}))
 
 
     # post_create testing:
-    # ...
+    # def test_post_create_context_types(self):
+    #     pass
 
 
 

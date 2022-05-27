@@ -93,7 +93,7 @@ def post_create(request):
 @login_required
 def post_edit(request, post_id):
     """Функция обеспечивает редактирование публикации."""
-    post = Post.objects.get(pk=post_id)
+    post = get_object_or_404(Post, pk=post_id)
     if request.user.id != post.author_id:
         return redirect('posts:post_detail', post_id=post_id)
     if request.method == 'POST':
